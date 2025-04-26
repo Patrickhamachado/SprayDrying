@@ -1,2 +1,4 @@
-# SprayDrying
-TFM Spray Drying
+
+```bash
+pip install tensorflow[and-cuda]
+```
