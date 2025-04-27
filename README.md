@@ -1,14 +1,47 @@
+# Proyecto de Optimización de Secado con DQN
 
+Sistema de aprendizaje por refuerzo profundo para optimización del proceso de secado en la industria minera.
 
-- **eda.py:** Lee los datos y genera un reporte html
+## Estructura del Proyecto
 
-- **tf_optimize.py:** Entrena el modelo `dqn_model.h5`, para calcular el siguiente estado a partir de un 
+### Scripts Principales
 
-- **test_model.py:** Hace un test del modelo  `dqn_model.h5` ¿El de siguientes estados?
+- **tf_optimize.py** - Entrenamiento principal del modelo DQN
+  - Implementa el agente `DQNAgent` con memoria de repetición
+  - Hiperparámetros configurables
+  - Guarda el modelo entrenado como `dqn_model.h5`
+  - Genera gráficos de progreso del entrenamiento (`training_progress.png`)
 
-- **cal_reward.py:** Calcula la recompensa de cada fila, leyendo los archivos CSV de datos y de pesos 
+- **test_model.py** - Validación del modelo entrenado
+  - Carga el modelo y realiza pruebas unitarias
+  - Compara recompensa predicha vs real
+  - Manejo seguro de datos de entrada
 
-- **optimize_dqn.py:** Optimiza el modelo de reinforcement learning con Gridsearch
+- **cal_reward.py** - Cálculo de función de recompensa
+  - Clase `RewardCalculator` con validación de datos
+  - Carga pesos desde CSV (`pesos.csv`)
+  - Métricas basadas en `Torre_PB_Flujo_Schenck`
 
+- **optimize_dqn.py** - Optimización de hiperparámetros
+  - Búsqueda en grid con combinaciones predefinidas
+  - Guarda resultados en `optimization_results.json`
+  - Parámetros optimizables: gamma, tasa de aprendizaje, tamaño de capas
 
- 
+- **eda.py** - Análisis exploratorio de datos
+  - Genera reporte HTML con estadísticas básicas
+  - Usa `ydata_profiling` para análisis rápido
+
+### Parámetros Clave del Modelo (tf_optimize.py)
+
+```python
+HYPERPARAMS = {
+    'gamma': 0.95,           # Factor de descuento
+    'epsilon_init': 1.0,     # Exploración inicial
+    'epsilon_min': 0.01,     # Exploración mínima
+    'epsilon_decay': 0.3,    # Tasa de decaimiento de exploración
+    'learning_rate': 0.001,  # Tasa de aprendizaje del optimizador
+    'batch_size': 32,        # Tamaño del batch de entrenamiento
+    'buffer_size': 2000,     # Capacidad máxima de la memoria
+    'layer_sizes': [64, 128, 64],  # Arquitectura de la red
+    'update_target_every': 100      # Pasos para actualizar red objetivo
+}
