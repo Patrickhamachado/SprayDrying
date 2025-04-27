@@ -75,6 +75,16 @@ El aprendizaje por refuerzo, o Reinforcement Learning, no se considera una técn
 Figura 2. Interacción Agente-Entorno en el aprendizaje por refuerzo
 ![img_2.png](img_2.png)
 
+**Nota:** Adaptado de (Sutton & Barto, 2005), http://www.incompleteideas.net/book/ebook/node28.html
+
+Dentro de los parámetros más relevantes para el entrenamiento de este tipo de modelos (Proellochs & Feuerriegel, 2020), se encuentran:
+
+•	**Tasa de aprendizaje (learning rate):** se utiliza para controlar cuánto se ajustan los valores de las Acciones en cada iteración. Un valor en cero, significaría que el Agente no aprendería y uno muy alto, cercano a unos, significaría que intentaría aprender muy rápido y podría ocasionar que el modelo no converja  
+•	**Descuento (Discount factor):** este parámetro se utiliza para asignar la importancia de las recompensas futuras en comparación con las inmediatas. Cuando es cercano a uno, significa que el agente valora las recompensas futuras casi tanto como las inmediatas, mientras que, si se encuentra cercano a cero, el agente se entrenará teniendo en cuenta recompensas a corto plazo. Por ejemplo, si se estuviera entrenando un agente para jugar ajedrez y este parámetro es cercano a cero, el agente podría empezar la partida tratando de tomar rápidamente las piezas del contrincante, una estrategia que a corto plazo le podría servir, mas cuando se enfrente a un jugador calificado posiblemente tenga poco éxito  
+•	**Exploración vs. Explotación (Exploration vs. Exploitation):** este parámetro controla la estrategia que seguirá el agente para decidir si explora nuevas alternativas, exploración, cuando su valor es más cercano a uno o si prefiere utilizar el conocimiento que ya aprendió, explotación, cuando su valor es más cercano a cero
+
+•	**Número de Episodios (Epochs):** este es el número de iteraciones que el _agente_ realizará interactuando con el _Entorno_ parar aprender. Normalmente entre más iteraciones se realicen, mejor entrenado quedará el _agente_, por supuesto, consumiendo más tiempo y recursos de procesamiento
+
 ----
 
 ### Scripts Principales
