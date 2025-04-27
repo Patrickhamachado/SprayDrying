@@ -9,14 +9,14 @@ matplotlib.use('Agg')  # Configuración para entornos no interactivos
 import matplotlib.pyplot as plt
 
 # ========= CONFIGURACIÓN =========
-EPOCHS = 10
-VALIDATION_SPLIT = 0.2
-TEST_SIZE = 0.2
+EPOCHS = 20
+VALIDATION_SPLIT = 0.1
+TEST_SIZE = 0.1
 RANDOM_STATE = 137
 
 # ========= CARGA DE DATOS =========
 print("Cargando datos...")
-data = pd.read_csv('datos_35_STD_24abr.csv')
+data = pd.read_csv('datos_Normal_v2_26abr_V1Filter.csv')
 
 # Verificación de columnas
 print("\nColumnas disponibles en el dataset:")
@@ -31,15 +31,14 @@ print("\nDefiniendo columnas...")
 list_cols = data.columns.tolist()
 
 # Columnas que NO son predictores (variables de control/configuración)
-list_no_predict = [
-    'Status_Spray_Drying',
-    'Tower_PMC_Controller_Enabled',
-    'Producto_A', 'Producto_B', 'Producto_C',
-    'STD.Number_of_Jets_Open',
-    'STD.P404_High_Pump_Pressure_SP',
-    'STD.Tower_Input_Temperature_SP',
-    'STD.Tower_Internal_Pressure_SP'
-]
+list_no_predict = ['Number_of_Jets_Open',
+                   'Bombeo_Low_Pump_P_401',
+                   'P404_High_Pump_Pressure_SP',
+                   'Apertura_Valvula_Flujo_Aeroboost_FCV_0371',
+                   'Apertura_Valvula_Presion_Aeroboost',
+                   'Tower_Input_Air_Fan_Speed_Ref',
+                   'Tower_Input_Temperature_SP',
+                   'Tower_Internal_Pressure_SP']
 
 # Columnas a predecir
 list_PREDICT = [col for col in list_cols if col not in list_no_predict]
@@ -58,31 +57,25 @@ print(f"Tamaño del conjunto de prueba: {len(test_data)}")
 
 # ========= CONSTRUCCIÓN DEL MODELO =========
 print("\nConstruyendo modelo...")
-model = Sequential([
-    Input(shape=(len(list_cols),)),
-    Dense(64, activation='relu'),
-    Dense(128, activation='relu'),
-    Dense(64, activation='relu'),
-    Dense(len(list_PREDICT))
-])
+model = Sequential([Input(shape=(len(list_cols),)),
+                    Dense(64, activation='relu'),
+                    Dense(128, activation='relu'),
+                    Dense(64, activation='relu'),
+                    Dense(len(list_PREDICT))])
 
-model.compile(
-    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-    loss='mse',
-    metrics=['mae', tf.keras.metrics.RootMeanSquaredError()]
-)
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+              loss='mse',
+              metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
 
 model.summary()
 
 # ========= ENTRENAMIENTO =========
 print("\nIniciando entrenamiento...")
-history = model.fit(
-    train_data[list_cols],
-    train_data[list_PREDICT],
-    epochs=EPOCHS,
-    validation_split=VALIDATION_SPLIT,
-    verbose=1
-)
+history = model.fit(train_data[list_cols],
+                    train_data[list_PREDICT],
+                    epochs=EPOCHS,
+                    validation_split=VALIDATION_SPLIT,
+                    verbose=1)
 
 # ========= EVALUACIÓN =========
 print("\nEvaluando modelo...")
@@ -142,6 +135,6 @@ print("\nGráficas guardadas en training_metrics.png")
 
 # ========= GUARDAR MODELO =========
 model.save('spray_drying_model.h5')
-print("\nModelo guardado como spray_drying_model.h5")
+print("\nModelo guardado como spray_drying_model.keras.h5")
 
 print("\nProceso completado exitosamente!")
