@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 class RewardCalculator:
     def __init__(self, pesos_path="pesos.csv"):
@@ -10,8 +9,7 @@ class RewardCalculator:
         df_pesos = pd.read_csv(pesos_path)
         df_pesos['W'] = df_pesos['W'].str.replace(',', '.').astype(float)
 
-        # Asegurar prefijo STD en las variables
-        mapping_vars = {row['V']: f"STD.{row['V']}" for _, row in df_pesos.iterrows()}
+        mapping_vars = {row['V']: f"{row['V']}" for _, row in df_pesos.iterrows()}
         df_pesos['V'] = df_pesos['V'].map(mapping_vars)
 
         return df_pesos.set_index('V')['W'].to_dict()
@@ -27,7 +25,7 @@ class RewardCalculator:
 
     def calculate_reward(self, row):
         self.validate_data(row.to_frame().T)
-        base_var = 'STD.Torre_PB_Flujo_Schenck'
+        base_var = 'Torre_PB_Flujo_Schenck'
 
         try:
             base_weight = self.pesos_dict[base_var]

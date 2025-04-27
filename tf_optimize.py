@@ -1,27 +1,23 @@
-import numpy as np
-import pandas as pd
-import tensorflow as tf
-from collections import deque
 import random
 import matplotlib
+import numpy as np
+import pandas as pd
 matplotlib.use('Agg')
+import tensorflow as tf
+from collections import deque
 import matplotlib.pyplot as plt
-import json
-import time
 from cal_reward import RewardCalculator
 
 # ========= CONFIGURACIÓN DE HIPERPARÁMETROS =========
-HYPERPARAMS = {
-    'gamma': 0.95,
-    'epsilon_init': 1.0,
-    'epsilon_min': 0.01,
-    'epsilon_decay': 0.3,
-    'learning_rate': 0.001,
-    'batch_size': 32,
-    'buffer_size': 2000,
-    'layer_sizes': [64, 128, 64],
-    'update_target_every': 100
-}
+HYPERPARAMS = {'gamma': 0.95,
+               'epsilon_init': 1.0,
+               'epsilon_min': 0.01,
+               'epsilon_decay': 0.3,
+               'learning_rate': 0.001,
+               'batch_size': 32,
+               'buffer_size': 2000,
+               'layer_sizes': [64, 128, 64],
+               'update_target_every': 100}
 
 def set_hyperparams(new_params):
     global HYPERPARAMS
@@ -62,10 +58,9 @@ class DQNAgent:
             model.add(tf.keras.layers.Dense(size, activation='relu'))
 
         model.add(tf.keras.layers.Dense(self.action_size, activation='linear'))
-        model.compile(
-            loss='mse',
-            optimizer=tf.keras.optimizers.Adam(learning_rate=get_hyperparams()['learning_rate'])
-        )
+        model.compile(optimizer='adam',
+                      loss='mse',
+                      metrics=['mae'])
         return model
 
     def update_target_model(self):
@@ -164,16 +159,14 @@ class DQNAgent:
     def save_model(self, filename):
         self.model.save(filename)
 
-def main(episodes=500, custom_params=None):
+def main(episodes=500, custom_params=None, input_data='sample_data.csv'):
     if custom_params:
         set_hyperparams(custom_params)
 
-    # Cargar y preparar datos
-    data = pd.read_csv('sample_data.csv')
+    data = pd.read_csv(input_data)
     if 'time_stamp' in data.columns:
         data = data.drop(columns=['time_stamp'])
 
-    # Validar datos
     calculator = RewardCalculator("pesos.csv")
     try:
         calculator.validate_data(data)
@@ -181,15 +174,14 @@ def main(episodes=500, custom_params=None):
         print(f"Error en los datos: {str(e)}")
         return None
 
-    # Inicializar y entrenar agente
     agent = DQNAgent(data.shape[1], action_size=5)
     agent.train(data, episodes)
 
-    # Guardar modelo final
     agent.save_model('dqn_model.h5')
     print("\nEntrenamiento completado. Modelo guardado como 'dqn_model.h5'")
 
     return agent
 
 if __name__ == "__main__":
-    main()
+    main(episodes=200,
+         input_data='datos_Normal_v2_26abr_V1Filter.csv')
