@@ -1,140 +1,195 @@
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Dense
-from tensorflow.keras.models import Sequential
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from collections import deque
+import random
 import matplotlib
-matplotlib.use('Agg')  # Configuración para entornos no interactivos
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import json
+import time
+from cal_reward import RewardCalculator
 
-# ========= CONFIGURACIÓN =========
-EPOCHS = 20
-VALIDATION_SPLIT = 0.1
-TEST_SIZE = 0.1
-RANDOM_STATE = 137
+# ========= CONFIGURACIÓN DE HIPERPARÁMETROS =========
+HYPERPARAMS = {
+    'gamma': 0.95,
+    'epsilon_init': 1.0,
+    'epsilon_min': 0.01,
+    'epsilon_decay': 0.3,
+    'learning_rate': 0.001,
+    'batch_size': 32,
+    'buffer_size': 2000,
+    'layer_sizes': [64, 128, 64],
+    'update_target_every': 100
+}
 
-# ========= CARGA DE DATOS =========
-print("Cargando datos...")
-data = pd.read_csv('datos_Normal_v2_26abr_V1Filter.csv')
+def set_hyperparams(new_params):
+    global HYPERPARAMS
+    HYPERPARAMS.update(new_params)
 
-# Verificación de columnas
-print("\nColumnas disponibles en el dataset:")
-print(data.columns.tolist())
+def get_hyperparams():
+    return HYPERPARAMS.copy()
 
-# Eliminar columna temporal si existe
-if 'time_stamp' in data.columns:
-    data = data.drop(columns=['time_stamp'])
+class DQNAgent:
+    def __init__(self, state_size, action_size):
+        params = get_hyperparams()
 
-# ========= DEFINICIÓN DE COLUMNAS =========
-print("\nDefiniendo columnas...")
-list_cols = data.columns.tolist()
+        self.state_size = state_size
+        self.action_size = action_size
+        self.memory = deque(maxlen=params['buffer_size'])
+        self.gamma = params['gamma']
+        self.epsilon = params['epsilon_init']
+        self.epsilon_min = params['epsilon_min']
+        self.epsilon_decay = params['epsilon_decay']
+        self.batch_size = params['batch_size']
+        self.update_target_every = params['update_target_every']
+        self.steps_since_update = 0
 
-# Columnas que NO son predictores (variables de control/configuración)
-list_no_predict = ['Number_of_Jets_Open',
-                   'Bombeo_Low_Pump_P_401',
-                   'P404_High_Pump_Pressure_SP',
-                   'Apertura_Valvula_Flujo_Aeroboost_FCV_0371',
-                   'Apertura_Valvula_Presion_Aeroboost',
-                   'Tower_Input_Air_Fan_Speed_Ref',
-                   'Tower_Input_Temperature_SP',
-                   'Tower_Internal_Pressure_SP']
+        self.reward_calculator = RewardCalculator("pesos.csv")
+        self.model = self._build_model(params['layer_sizes'])
+        self.target_model = self._build_model(params['layer_sizes'])
+        self.update_target_model()
 
-# Columnas a predecir
-list_PREDICT = [col for col in list_cols if col not in list_no_predict]
+        self.episode_rewards = []
+        self.episode_losses = []
+        self.epsilon_history = []
 
-print(f"\nTotal de características: {len(list_cols)}")
-print(f"Variables a predecir: {len(list_PREDICT)}")
-print("Ejemplo de variables a predecir:", list_PREDICT[:5])
+    def _build_model(self, layer_sizes):
+        model = tf.keras.Sequential()
+        model.add(tf.keras.layers.Input(shape=(self.state_size,)))
 
-# ========= DIVISIÓN DE DATOS =========
-print("\nDividiendo datos...")
-train_data = data.sample(frac=1-TEST_SIZE, random_state=RANDOM_STATE)
-test_data = data.drop(train_data.index)
+        for size in layer_sizes:
+            model.add(tf.keras.layers.Dense(size, activation='relu'))
 
-print(f"Tamaño del conjunto de entrenamiento: {len(train_data)}")
-print(f"Tamaño del conjunto de prueba: {len(test_data)}")
+        model.add(tf.keras.layers.Dense(self.action_size, activation='linear'))
+        model.compile(
+            loss='mse',
+            optimizer=tf.keras.optimizers.Adam(learning_rate=get_hyperparams()['learning_rate'])
+        )
+        return model
 
-# ========= CONSTRUCCIÓN DEL MODELO =========
-print("\nConstruyendo modelo...")
-model = Sequential([Input(shape=(len(list_cols),)),
-                    Dense(64, activation='relu'),
-                    Dense(128, activation='relu'),
-                    Dense(64, activation='relu'),
-                    Dense(len(list_PREDICT))])
+    def update_target_model(self):
+        self.target_model.set_weights(self.model.get_weights())
 
-model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-              loss='mse',
-              metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+    def remember(self, state, action, reward, next_state, done):
+        self.memory.append((state, action, reward, next_state, done))
 
-model.summary()
+    def act(self, state):
+        if np.random.rand() <= self.epsilon:
+            return random.randrange(self.action_size)
+        act_values = self.model.predict(state, verbose=0)
+        return np.argmax(act_values[0])
 
-# ========= ENTRENAMIENTO =========
-print("\nIniciando entrenamiento...")
-history = model.fit(train_data[list_cols],
-                    train_data[list_PREDICT],
-                    epochs=EPOCHS,
-                    validation_split=VALIDATION_SPLIT,
-                    verbose=1)
+    def replay(self):
+        if len(self.memory) < self.batch_size:
+            return 0
 
-# ========= EVALUACIÓN =========
-print("\nEvaluando modelo...")
-test_results = model.evaluate(test_data[list_cols], test_data[list_PREDICT], verbose=0)
+        minibatch = random.sample(self.memory, self.batch_size)
+        losses = []
 
-# Predicciones para métricas adicionales
-y_pred = model.predict(test_data[list_cols])
-y_true = test_data[list_PREDICT].values
+        for state, action, reward, next_state, done in minibatch:
+            target = self.model.predict(state, verbose=0)
+            if done:
+                target[0][action] = reward
+            else:
+                t = self.target_model.predict(next_state, verbose=0)
+                target[0][action] = reward + self.gamma * np.amax(t)
 
-print("\n=== MÉTRICAS PRINCIPALES ===")
-print(f"Test Loss (MSE): {test_results[0]:.4f}")
-print(f"Test MAE: {test_results[1]:.4f}")
-print(f"Test RMSE: {test_results[2]:.4f}")
+            history = self.model.fit(state, target, epochs=1, verbose=0)
+            losses.append(history.history['loss'][0])
 
-print("\n=== MÉTRICAS ADICIONALES ===")
-print(f"MSE: {mean_squared_error(y_true, y_pred):.4f}")
-print(f"MAE: {mean_absolute_error(y_true, y_pred):.4f}")
-print(f"R²: {r2_score(y_true, y_pred):.4f}")
+            self.steps_since_update += 1
+            if self.steps_since_update >= self.update_target_every:
+                self.update_target_model()
+                self.steps_since_update = 0
 
-# ========= PREDICCIÓN DE EJEMPLO =========
-print("\nPreparando ejemplo de predicción...")
-# Usamos la primera fila del test set como ejemplo
-vals = test_data[list_cols].iloc[0:1].values
+        avg_loss = np.mean(losses) if losses else 0
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
 
-print("\nDatos de entrada para la predicción (primera fila de test):")
-print(vals)
+        return avg_loss
 
-prediction = model.predict(vals)
-print("\nResultado de la predicción:")
-print(prediction)
+    def train(self, data, episodes):
+        for e in range(episodes):
+            state_df = data.sample(1)
+            state = state_df.values.reshape(1, self.state_size)
 
-# ========= VISUALIZACIÓN =========
-print("\nGenerando gráficas...")
-plt.figure(figsize=(15, 6))
+            action = self.act(state)
+            next_state_df = data.sample(1)
+            next_state = next_state_df.values.reshape(1, self.state_size)
 
-# Gráfico de pérdida
-plt.subplot(1, 2, 1)
-plt.plot(history.history['loss'], label='Train Loss')
-plt.plot(history.history['val_loss'], label='Validation Loss')
-plt.title('Evolución de la Pérdida (MSE)')
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.legend()
+            reward = self.reward_calculator.calculate_reward(state_df.iloc[0])
+            done = False
 
-# Gráfico de MAE
-plt.subplot(1, 2, 2)
-plt.plot(history.history['mae'], label='Train MAE')
-plt.plot(history.history['val_mae'], label='Validation MAE')
-plt.title('Evolución del Error Absoluto Medio (MAE)')
-plt.ylabel('MAE')
-plt.xlabel('Epoch')
-plt.legend()
+            self.remember(state, action, reward, next_state, done)
+            loss = self.replay()
 
-plt.tight_layout()
-plt.savefig('training_metrics.png')
-print("\nGráficas guardadas en training_metrics.png")
+            self.episode_rewards.append(reward)
+            self.episode_losses.append(loss)
+            self.epsilon_history.append(self.epsilon)
 
-# ========= GUARDAR MODELO =========
-model.save('spray_drying_model.h5')
-print("\nModelo guardado como spray_drying_model.keras.h5")
+            if e % 50 == 0:
+                self.log_progress(e, episodes)
 
-print("\nProceso completado exitosamente!")
+    def log_progress(self, episode, total_episodes):
+        avg_reward = np.mean(self.episode_rewards[-50:]) if self.episode_rewards else 0
+        avg_loss = np.mean(self.episode_losses[-50:]) if self.episode_losses else 0
+
+        print(f"\nEpisodio {episode}/{total_episodes}")
+        print(f"Recompensa promedio (últimos 50): {avg_reward:.2f}")
+        print(f"Pérdida promedio (últimos 50): {avg_loss:.4f}")
+        print(f"Epsilon: {self.epsilon:.3f}")
+
+        self.plot_training(episode)
+
+    def plot_training(self, episode):
+        plt.figure(figsize=(15, 10))
+
+        plt.subplot(3, 1, 1)
+        plt.plot(self.episode_rewards)
+        plt.title(f'Recompensas - Episodio {episode}')
+
+        plt.subplot(3, 1, 2)
+        plt.plot(self.episode_losses)
+        plt.title('Pérdida durante el entrenamiento')
+
+        plt.subplot(3, 1, 3)
+        plt.plot(self.epsilon_history)
+        plt.title('Exploración (Epsilon)')
+
+        plt.tight_layout()
+        plt.savefig('training_progress.png')
+        plt.close()
+
+    def save_model(self, filename):
+        self.model.save(filename)
+
+def main(episodes=500, custom_params=None):
+    if custom_params:
+        set_hyperparams(custom_params)
+
+    # Cargar y preparar datos
+    data = pd.read_csv('sample_data.csv')
+    if 'time_stamp' in data.columns:
+        data = data.drop(columns=['time_stamp'])
+
+    # Validar datos
+    calculator = RewardCalculator("pesos.csv")
+    try:
+        calculator.validate_data(data)
+    except ValueError as e:
+        print(f"Error en los datos: {str(e)}")
+        return None
+
+    # Inicializar y entrenar agente
+    agent = DQNAgent(data.shape[1], action_size=5)
+    agent.train(data, episodes)
+
+    # Guardar modelo final
+    agent.save_model('dqn_model.h5')
+    print("\nEntrenamiento completado. Modelo guardado como 'dqn_model.h5'")
+
+    return agent
+
+if __name__ == "__main__":
+    main()
