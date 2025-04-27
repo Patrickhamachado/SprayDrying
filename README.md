@@ -16,7 +16,7 @@ Se generan dos redes neuronales:
 
 Las diez variables marcadas como "Perturbación" en la hoja Definitivos_35 del excel "DESCRIPCIÓN DE DATOS Rev 2.xlsx" son variables que en los modelos se utilizarán como si fuesen estados del Entorno, sin embargo, en la vida real, obedecen a condiciones de entrada externas al proceso, causadas por procesos anteriores a la torre de secado o condiciones de la planta. Estas son:
 
-No	Variable  
+**No**	**Variable**  
 2	Status_Spray_Drying  
 3	Tower_PMC_Controller_Enabled  
 4	Producto_A  
@@ -33,7 +33,7 @@ No	Variable
 
 Las siguientes 16 variables, marcadas en el excel como Controlada y Manipulada, son los estados reales de la planta
 
-No	Variable  
+**No**	**Variable**   
 9	Bombeo_Low_Pump_FT_0355_Kg_h  
 11	P404_High_Pump_Pressure_CV  
 12	P404_High_Pump_Pressure_PV  
@@ -56,7 +56,7 @@ No	Variable
 
 Las siguientes ocho variables son las salidas que debe calcular la red "Red_optimizacion_secado" para optimizar económicamente la operación del proceso
 
-No	Variable  
+**No**	**Variable**   
 7	Number_of_Jets_Open  
 8	Bombeo_Low_Pump_P_401  
 10	P404_High_Pump_Pressure_SP  
