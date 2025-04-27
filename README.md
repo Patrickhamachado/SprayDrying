@@ -66,26 +66,16 @@ No	Variable
 25	Tower_Input_Temperature_SP  
 28	Tower_Internal_Pressure_SP  
 
+----------
 
-Algorithm 1
-Design Procedure for the proposed framework
+# Aprendizaje por refuerzo (Reinforcement Learning)
 
-1: Control design: Select regulatory and supervisory control layers suitable for the process dynamics, interactions, and constraints.
+El aprendizaje por refuerzo, o Reinforcement Learning, no se considera una técnica de aprendizaje supervisado ni tampoco una de aprendizaje no-supervisado, sino que se considera de una clase diferente (Géron, 2017). Se trata de una técnica de machine learning en donde un _Agente_ (Agent), interactúa con un _Entorno_ (Environment), sin conocimiento previo de este y pretende maximizar una _Recompensa_ (Reward), como se representa en la Figura 2. La idea principal es que, a través de varias iteraciones, el agente va experimentando sus posibles _Acciones_ (Actions) en los diversos _Estados_ (States) en los que se puede encontrar el entorno, aprendiendo y memorizando las acciones que le brindan la mejor recompensa para cada combinación _Estado_-_Acción_. Esta estrategia que acaba aprendiendo el _Agente_ se denomina _Política_ (Policy) y es la que utilizará el _Agente_ para reaccionar ante eventos futuros, esperando maximizar la _Recompensa_.
 
-2: Setpoint identification: Identify setpoints with the greatest impact on operational costs and product quality using historical data and process expertise. These will become the focus of offline learning.
+Figura 2. Interacción Agente-Entorno en el aprendizaje por refuerzo
+![img_2.png](img_2.png)
 
-3: Safety override integration: Define strict safety limits for critical process variables. Implement overrides within the control layer to supersede RL-suggested setpoints that could violate these limits.
-
-4: Offline policy learning:
-
-• Data curation: Carefully prepare a dataset according to “Training Data and Informativity" guidelines.
-
-• Value function learning: Choose a value function representation aligned with process complexity and data characteristics.
-
-• Policy extraction: Apply a method such as advantage-weighted regression (AWR) to extract a policy from the learned value function, focusing on actions with high expected long-term rewards.
-
-5: Policy deployment: Deploy the learned policy online to the system.
-
+----
 
 ### Scripts Principales
 
@@ -129,3 +119,26 @@ HYPERPARAMS = {
     'layer_sizes': [64, 128, 64],  # Arquitectura de la red
     'update_target_every': 100      # Pasos para actualizar red objetivo
 }
+```
+
+---------
+
+## Algorithm 1
+Design Procedure for the proposed framework
+
+1: Control design: Select regulatory and supervisory control layers suitable for the process dynamics, interactions, and constraints.
+
+2: Setpoint identification: Identify setpoints with the greatest impact on operational costs and product quality using historical data and process expertise. These will become the focus of offline learning.
+
+3: Safety override integration: Define strict safety limits for critical process variables. Implement overrides within the control layer to supersede RL-suggested setpoints that could violate these limits.
+
+4: Offline policy learning:
+
+• Data curation: Carefully prepare a dataset according to “Training Data and Informativity" guidelines.
+
+• Value function learning: Choose a value function representation aligned with process complexity and data characteristics.
+
+• Policy extraction: Apply a method such as advantage-weighted regression (AWR) to extract a policy from the learned value function, focusing on actions with high expected long-term rewards.
+
+5: Policy deployment: Deploy the learned policy online to the system.
+
