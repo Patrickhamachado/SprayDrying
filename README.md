@@ -16,57 +16,55 @@ Se generan dos redes neuronales:
 
 Las diez variables marcadas como "Perturbación" en la hoja Definitivos_35 del excel "DESCRIPCIÓN DE DATOS Rev 2.xlsx" son variables que en los modelos se utilizarán como si fuesen estados del Entorno, sin embargo, en la vida real, obedecen a condiciones de entrada externas al proceso, causadas por procesos anteriores a la torre de secado o condiciones de la planta. Estas son:
 
-No	Variable
-2	Status_Spray_Drying
-3	Tower_PMC_Controller_Enabled
-4	Producto_A
-5	Producto_B
-6	Producto_C
-13	Bombeo_HP_TT_0355
-18	Bombeo_Slurry_Densidad
-19	Bombeo_Slurry_Humedad_HT_P401
-20	Torre_Horno_Temp_Aire
-21	Torre_Horno_Temp_Gas
+No	Variable  
+2	Status_Spray_Drying  
+3	Tower_PMC_Controller_Enabled  
+4	Producto_A  
+5	Producto_B  
+6	Producto_C  
+13	Bombeo_HP_TT_0355  
+18	Bombeo_Slurry_Densidad  
+19	Bombeo_Slurry_Humedad_HT_P401  
+20	Torre_Horno_Temp_Aire  
+21	Torre_Horno_Temp_Gas  
 
 
 ### Variables de estado del proceso
 
 Las siguientes 16 variables, marcadas en el excel como Controlada y Manipulada, son los estados reales de la planta
 
-No	Variable
-9	Bombeo_Low_Pump_FT_0355_Kg_h
-11	P404_High_Pump_Pressure_CV
-12	P404_High_Pump_Pressure_PV
-15	Bombeo_Aero_Boost_FT_0371_Kg_h
-17	Bombeo_Aero_Boost_PT_0371_BAR
-23	Tower_Input_Air_Fan_Speed_Feedback
-24	Flujo_de_aire_Horno
-26	Torre_Horno_Flujo_Gas
-27	Tower_Input_Temperature_PV
-29	Tower_Internal_Pressure_CV
-30	Tower_Internal_Pressure_Mean
-31	Torre_Techo_TT_0414_C
-32	Torre_PB_Flujo_Schenck
-33	Torre_PB_Humedad_MT_500
-34	F501_Ciclone_01_Speed
-35	TT5011_Dry_Cyclon_01_Temperature
+No	Variable  
+9	Bombeo_Low_Pump_FT_0355_Kg_h  
+11	P404_High_Pump_Pressure_CV  
+12	P404_High_Pump_Pressure_PV  
+15	Bombeo_Aero_Boost_FT_0371_Kg_h  
+17	Bombeo_Aero_Boost_PT_0371_BAR  
+23	Tower_Input_Air_Fan_Speed_Feedback  
+24	Flujo_de_aire_Horno  
+26	Torre_Horno_Flujo_Gas  
+27	Tower_Input_Temperature_PV  
+29	Tower_Internal_Pressure_CV  
+30	Tower_Internal_Pressure_Mean  
+31	Torre_Techo_TT_0414_C  
+32	Torre_PB_Flujo_Schenck  
+33	Torre_PB_Humedad_MT_500  
+34	F501_Ciclone_01_Speed  
+35	TT5011_Dry_Cyclon_01_Temperature  
 
 
 ### Variables de Acción
 
 Las siguientes ocho variables son las salidas que debe calcular la red "Red_optimizacion_secado" para optimizar económicamente la operación del proceso
 
-No	Variable
-7	Number_of_Jets_Open
-8	Bombeo_Low_Pump_P_401
-10	P404_High_Pump_Pressure_SP
-14	Apertura_Valvula_Flujo_Aeroboost_FCV_0371
-16	Apertura_Valvula_Presion_Aeroboost
-22	Tower_Input_Air_Fan_Speed_Ref
-25	Tower_Input_Temperature_SP
-28	Tower_Internal_Pressure_SP
-
-
+No	Variable  
+7	Number_of_Jets_Open  
+8	Bombeo_Low_Pump_P_401  
+10	P404_High_Pump_Pressure_SP  
+14	Apertura_Valvula_Flujo_Aeroboost_FCV_0371  
+16	Apertura_Valvula_Presion_Aeroboost  
+22	Tower_Input_Air_Fan_Speed_Ref  
+25	Tower_Input_Temperature_SP  
+28	Tower_Internal_Pressure_SP  
 
 
 Algorithm 1
@@ -87,7 +85,6 @@ Design Procedure for the proposed framework
 • Policy extraction: Apply a method such as advantage-weighted regression (AWR) to extract a policy from the learned value function, focusing on actions with high expected long-term rewards.
 
 5: Policy deployment: Deploy the learned policy online to the system.
-
 
 
 ### Scripts Principales
