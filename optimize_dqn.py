@@ -3,9 +3,6 @@ import itertools
 import numpy as np
 from tf_optimize import main, set_hyperparams
 
-main(episodes=200,
-     input_data='datos_Normal_v2_26abr_V1Filter.csv')
-
 def grid_search():
     # Espacio de búsqueda de hiperparámetros
     param_grid = {'gamma': [0.9, 0.95, 0.99],
@@ -31,7 +28,8 @@ def grid_search():
         print(json.dumps(params, indent=2))
 
         set_hyperparams(params)
-        agent = main(episodes=100)  # Entrenamiento corto para evaluación
+        agent = main(episodes=100,
+                     input_data='datos_Normal_v2_26abr_V1Filter.csv')
 
         if agent:
             avg_reward = np.mean(agent.episode_rewards[-20:])
