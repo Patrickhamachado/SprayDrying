@@ -45,8 +45,8 @@ class RewardCalculator:
         return df_data
 
 if __name__ == "__main__":
-    calculator = RewardCalculator("pesos.csv")
-    df_data = pd.read_csv("sample_data.csv")
+    calculator = RewardCalculator("data/pesos.csv")
+    df_data = pd.read_csv("data/sample_data.csv")
 
     try:
         df_with_reward = calculator.add_reward_column(df_data)

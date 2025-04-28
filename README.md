@@ -73,7 +73,7 @@ Las siguientes ocho variables son las salidas que debe calcular la red "Red_opti
 El aprendizaje por refuerzo, o Reinforcement Learning, no se considera una técnica de aprendizaje supervisado ni tampoco una de aprendizaje no-supervisado, sino que se considera de una clase diferente (Géron, 2017). Se trata de una técnica de machine learning en donde un _Agente_ (Agent), interactúa con un _Entorno_ (Environment), sin conocimiento previo de este y pretende maximizar una _Recompensa_ (Reward), como se representa en la Figura 2. La idea principal es que, a través de varias iteraciones, el agente va experimentando sus posibles _Acciones_ (Actions) en los diversos _Estados_ (States) en los que se puede encontrar el entorno, aprendiendo y memorizando las acciones que le brindan la mejor recompensa para cada combinación _Estado_-_Acción_. Esta estrategia que acaba aprendiendo el _Agente_ se denomina _Política_ (Policy) y es la que utilizará el _Agente_ para reaccionar ante eventos futuros, esperando maximizar la _Recompensa_.
 
 Figura 2. Interacción Agente-Entorno en el aprendizaje por refuerzo
-![img_2.png](img_2.png)
+![img_2.png](img/img_2.png)
 
 **Nota:** Adaptado de (Sutton & Barto, 2005), http://www.incompleteideas.net/book/ebook/node28.html
 
