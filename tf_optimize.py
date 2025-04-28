@@ -51,6 +51,12 @@ class DQNAgent:
         self.epsilon_history = []
 
     def _build_model(self, layer_sizes):
+        """
+        Red nauronal con los datos de entrada (Universo)
+
+        :param layer_sizes:
+        :return:
+        """
         model = tf.keras.Sequential()
         model.add(tf.keras.layers.Input(shape=(self.state_size,)))
 
