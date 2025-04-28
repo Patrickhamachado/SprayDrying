@@ -8,11 +8,11 @@ matplotlib.use('Agg')  # Configuración para entornos no interactivos
 import matplotlib.pyplot as plt
 
 # ========= CONFIGURACIÓN =========
-EPOCHS = 2
+EPOCHS = 20
 VALIDATION_SPLIT = 0.1
 TEST_SIZE = 0.1
 RANDOM_STATE = 137
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0001
 
 # ========= CARGA DE DATOS =========
 print("Cargando datos...")
