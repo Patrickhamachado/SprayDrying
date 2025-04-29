@@ -7,6 +7,15 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 matplotlib.use('Agg')  # Configuración para entornos no interactivos
 import matplotlib.pyplot as plt
 
+# predict_net_v2.py
+
+#  Script para entrenar un modelo de red neuronal que actúa como modelo dinámico del proceso. Este modelo
+#  (models/predict_model.keras) predice el siguiente estado del sistema dadas las entradas actuales y es
+#  utilizado por el optimizador D-RTO.
+
+# 29 abr 2025: Corregido que estab prediciendo los mismos datos de entrada, en lugar de los del siguiente minuto
+
+
 # ========= CONFIGURACIÓN =========
 EPOCHS = 4
 VALIDATION_SPLIT = 0.1
@@ -44,8 +53,15 @@ print("Ejemplo de variables a predecir:", list_PREDICT[:5])
 
 # ========= DIVISIÓN DE DATOS =========
 print("\nDividiendo datos...")
-train_data = data.sample(frac=1-TEST_SIZE, random_state=RANDOM_STATE)
-test_data = data.drop(train_data.index)
+train_data = data.iloc[0:-1].sample(frac=1-TEST_SIZE, random_state=RANDOM_STATE)
+test_data = data.iloc[0:-1].drop(train_data.index)
+
+# Los valores Y a predecir, son la siguiente fila de los X de entrada
+train_data_y = data.iloc[train_data.index + 1]
+train_data_y = train_data_y[list_PREDICT]
+
+test_data_y = data.iloc[test_data.index + 1]
+test_data_y = test_data_y[list_PREDICT]
 
 print(f"Tamaño del conjunto de entrenamiento: {len(train_data)}")
 print(f"Tamaño del conjunto de prueba: {len(test_data)}")
@@ -67,14 +83,14 @@ model.summary()
 # ========= ENTRENAMIENTO =========
 print("\nIniciando entrenamiento...")
 history = model.fit(train_data[list_cols],
-                    train_data[list_PREDICT],
+                    train_data_y,
                     epochs=EPOCHS,
                     validation_split=VALIDATION_SPLIT,
                     verbose=1)
 
 # ========= EVALUACIÓN =========
 print("\nEvaluando modelo...")
-test_results = model.evaluate(test_data[list_cols], test_data[list_PREDICT], verbose=0)
+test_results = model.evaluate(test_data[list_cols], test_data_y, verbose=0)
 
 # Predicciones para métricas adicionales
 y_pred = model.predict(test_data[list_cols])

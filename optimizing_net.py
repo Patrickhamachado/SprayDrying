@@ -6,7 +6,7 @@ from cal_reward import RewardCalculator
 DATA_PATH = 'data/datos_Normal_v2_26abr_V1Filter.csv'
 MODEL_PATH = 'models/predict_model.keras'
 PESOS_PATH = 'data/pesos.csv' # Assuming pesos.csv is in data directory
-OPTIMIZATION_STEPS = 100 # Number of optimization steps
+OPTIMIZATION_STEPS = 200 # Number of optimization steps
 OPTIMIZATION_LEARNING_RATE = 0.01 # Learning rate for the optimizer
 
 # Columnas que NO son predictores (variables de control/configuración) - Copied from predict_net.py
@@ -377,7 +377,7 @@ if not data.empty:
          print(f"  {var}: {val:.4f}")
     print(f"Recompensa Predicha con Variables Óptimas: {predicted_reward_at_optimum:.4f}")
     print("Estado Predicho con Variables Óptimas:")
-    print(predicted_state_at_optimum.to_string())
+    # print(predicted_state_at_optimum.to_string())
 
 
 else:

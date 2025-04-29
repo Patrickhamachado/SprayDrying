@@ -1,106 +1,106 @@
 {
     "Status_Spray_Drying": {
         "Real": 1.0,
-        "Predict": 0.9999426007270813
+        "Predict": 0.8746144771575928
     },
     "Tower_PMC_Controller_Enabled": {
         "Real": 1.0,
-        "Predict": 0.5189112424850464
+        "Predict": 0.756586492061615
     },
     "Producto_A": {
         "Real": 0.0,
-        "Predict": 0.27600720524787903
+        "Predict": 0.08684719353914261
     },
     "Producto_B": {
         "Real": 0.0,
-        "Predict": 0.0013695117086172104
+        "Predict": -0.09192322194576263
     },
     "Producto_C": {
         "Real": 1.0,
-        "Predict": 0.7210886478424072
+        "Predict": 0.9523653984069824
     },
     "Bombeo_Low_Pump_FT_0355_Kg_h": {
         "Real": 0.590567784088109,
-        "Predict": 0.5916230082511902
+        "Predict": 0.6732797622680664
     },
     "P404_High_Pump_Pressure_CV": {
         "Real": 0.679104159651535,
-        "Predict": 0.6907737255096436
+        "Predict": 0.7845004200935364
     },
     "P404_High_Pump_Pressure_PV": {
         "Real": 0.874438296783725,
-        "Predict": 0.8498674035072327
+        "Predict": 0.7880959510803223
     },
     "Bombeo_HP_TT_0355": {
         "Real": 0.750437570011486,
-        "Predict": 0.690843939781189
+        "Predict": 0.6745190620422363
     },
     "Bombeo_Aero_Boost_FT_0371_Kg_h": {
         "Real": 0.0059423363509444,
-        "Predict": 0.2967429757118225
+        "Predict": 0.009688298217952251
     },
     "Bombeo_Aero_Boost_PT_0371_BAR": {
         "Real": 0.90718330109846,
-        "Predict": 0.756552517414093
+        "Predict": 0.9572625160217285
     },
     "Bombeo_Slurry_Densidad": {
         "Real": 0.951409079221635,
-        "Predict": 0.9420866966247559
+        "Predict": 0.8910468220710754
     },
     "Bombeo_Slurry_Humedad_HT_P401": {
         "Real": 0.471328319221902,
-        "Predict": 0.3975488841533661
+        "Predict": 0.4410752058029175
     },
     "Torre_Horno_Temp_Aire": {
         "Real": 0.158793592284681,
-        "Predict": 0.3705207407474518
+        "Predict": 0.3071240782737732
     },
     "Torre_Horno_Temp_Gas": {
         "Real": 0.806451595868337,
-        "Predict": 0.5620163083076477
+        "Predict": 0.7255330681800842
     },
     "Tower_Input_Air_Fan_Speed_Feedback": {
         "Real": 0.9605035,
-        "Predict": 0.9530039429664612
+        "Predict": 0.8310014605522156
     },
     "Flujo_de_aire_Horno": {
         "Real": 0.274426996852367,
-        "Predict": 0.34170085191726685
+        "Predict": 0.4404814839363098
     },
     "Torre_Horno_Flujo_Gas": {
         "Real": 0.562499968965519,
-        "Predict": 0.5300846099853516
+        "Predict": 0.5971574783325195
     },
     "Tower_Input_Temperature_PV": {
         "Real": 0.811517129874093,
-        "Predict": 0.8512973189353943
+        "Predict": 0.9231387376785278
     },
     "Tower_Internal_Pressure_CV": {
         "Real": 0.82068054,
-        "Predict": 0.8082134127616882
+        "Predict": 0.7720535397529602
     },
     "Tower_Internal_Pressure_Mean": {
         "Real": 0.327238606149226,
-        "Predict": 0.3704017698764801
+        "Predict": 0.2189096212387085
     },
     "Torre_Techo_TT_0414_C": {
         "Real": 0.681862407044537,
-        "Predict": 0.6532813310623169
+        "Predict": 0.7276884913444519
     },
     "Torre_PB_Flujo_Schenck": {
         "Real": 0.551743053081235,
-        "Predict": 0.5521903038024902
+        "Predict": 0.48527994751930237
     },
     "Torre_PB_Humedad_MT_500": {
         "Real": 0.16424510423247,
-        "Predict": 0.17583517730236053
+        "Predict": 0.2122659981250763
     },
     "F501_Ciclone_01_Speed": {
         "Real": 0.8228618,
-        "Predict": 0.8068839907646179
+        "Predict": 0.6649375557899475
     },
     "TT5011_Dry_Cyclon_01_Temperature": {
         "Real": 0.612308289652495,
-        "Predict": 0.6023153066635132
+        "Predict": 0.6357553601264954
     }
 }

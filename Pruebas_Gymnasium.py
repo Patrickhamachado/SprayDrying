@@ -170,3 +170,76 @@ for i in range(1, 10):
 print("Best score:", best_score, "| Best policy:")
 print(best_policy)
 print_policy(best_policy)
+
+
+# --------------
+# Pruebas para acomodar los datos
+
+import matplotlib
+import pandas as pd
+# import tensorflow as tf
+# from tensorflow.keras.models import Sequential
+# from tensorflow.keras.layers import Input, Dense
+# from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+# matplotlib.use('Agg')  # Configuración para entornos no interactivos
+# import matplotlib.pyplot as plt
+
+# ========= CONFIGURACIÓN =========
+EPOCHS = 4
+VALIDATION_SPLIT = 0.1
+TEST_SIZE = 0.1
+RANDOM_STATE = 137
+LEARNING_RATE = 0.0001
+
+
+data = pd.read_csv('data/datos_Normal_v2_26abr_V1Filter.csv')
+
+if 'time_stamp' in data.columns:
+    data = data.drop(columns=['time_stamp'])
+
+list_cols = data.columns.tolist()
+
+# Columnas que NO son predictores (variables de control/configuración)
+list_no_predict = ['Number_of_Jets_Open', 'Bombeo_Low_Pump_P_401', 'P404_High_Pump_Pressure_SP',
+                   'Apertura_Valvula_Flujo_Aeroboost_FCV_0371', 'Apertura_Valvula_Presion_Aeroboost',
+                   'Tower_Input_Air_Fan_Speed_Ref', 'Tower_Input_Temperature_SP', 'Tower_Internal_Pressure_SP']
+
+# Columnas a predecir
+list_PREDICT = [col for col in list_cols if col not in list_no_predict]
+
+# ========= DIVISIÓN DE DATOS =========
+print("\nDividiendo datos...")
+train_data = data.sample(frac=1-TEST_SIZE, random_state=RANDOM_STATE)
+test_data = data.drop(train_data.index)
+
+
+# Reemplazar por:
+train_data = data.iloc[0:-1].sample(frac=1-TEST_SIZE, random_state=RANDOM_STATE)
+test_data = data.iloc[0:-1].drop(train_data.index)
+
+train_data_y = data.iloc[train_data.index + 1]
+train_data_y = train_data_y[list_PREDICT]
+
+test_data_y = data.iloc[test_data.index + 1]
+test_data_y = test_data_y[list_PREDICT]
+
+
+print(f"Tamaño del conjunto de entrenamiento: {len(train_data)}")
+print(f"Tamaño del conjunto de prueba: {len(test_data)}")
+
+
+train_data[list_cols]
+train_data.iloc[train_data.index, list_PREDICT]
+
+[train_data.index + 1] in range(len(data))
+
+len(data) in train_data.index 
+
+
+# ========= ENTRENAMIENTO =========
+print("\nIniciando entrenamiento...")
+history = model.fit(train_data[list_cols],
+                    train_data[list_PREDICT],
+                    epochs=EPOCHS,
+                    validation_split=VALIDATION_SPLIT,
+                    verbose=1)
