@@ -1,18 +1,51 @@
-# Proyecto de Optimización de Secado con DQN
+# Proyecto de Optimización Dinámica en Tiempo Real (D-RTO) de Proceso Industrial
 
-Sistema de aprendizaje por refuerzo profundo para optimización del proceso de secado por aspersión.
+Implementación de un enfoque de Optimización Dinámica en Tiempo Real (D-RTO) para la operación de un proceso industrial, utilizando un modelo predictor basado en redes neuronales y una función de recompensa para maximizar el rendimiento económico.
 
 ## Estructura del Proyecto
 
-Se generan dos redes neuronales:
-- **Red_simulacion**: Simula la torre de secado. Las entradas son el conjunto de estados (26 variables: 10 de Perturbación y 16 Estados) y acciones (8 variables), para un total de 34 variables y la salida es el estado en el minuto siguiente (26 variables)  
+El proyecto se estructura en torno a los siguientes scripts principales que colaboran para la implementación de D-RTO:
 
-- **Red_optimizacion_secado**: Esta red, construye la politica para optimizar económicamente la operación de la torre de secado. Contará con 26 variables de entrada, los estados y como salida calcula las 8 variables de acción que constituyen la mejor opción económicamente. Para interactuar y aprender del Entorno, utiliza la primera red neuronal.
+-   **`predict_net.py`**: Script para entrenar un modelo de red neuronal que actúa como **modelo dinámico** del proceso. Este modelo (`models/predict_model.keras`) predice el siguiente estado del sistema dadas las entradas actuales y es utilizado por el optimizador D-RTO.
+-   **`cal_reward.py`**: Clase `RewardCalculator` que define y calcula la **recompensa** instantánea del proceso basado en un estado dado, utilizando pesos especificados en `data/pesos.csv`. Esta recompensa sirve como el objetivo de optimización para el D-RTO.
+-   **`optimizing_net.py`**: Script principal de **Optimización Dinámica en Tiempo Real (D-RTO)**. Carga el modelo dinámico y el calculador de recompensa, y utiliza optimización basada en gradientes para encontrar los valores óptimos de las variables de decisión que maximizan la recompensa predicha en el siguiente paso de tiempo, dado el estado actual del proceso.
 
+## Variables del Proceso
+
+El modelo dinámico en `predict_net.py` utiliza un conjunto de variables de entrada (`list_cols`) para predecir un conjunto de variables de salida (`list_PREDICT`). En el contexto de la optimización D-RTO implementada en `optimizing_net.py`, estas variables tienen los siguientes roles:
+
+-   **Variables de Entrada al Modelo (`list_cols`)**:
+    Son todas las variables del proceso que sirven como entrada al modelo dinámico `predict_model.keras` para predecir el siguiente estado.
+
+    -   **Variables de Decisión (`list_decision_vars`)**:
+        Subconjunto de `list_cols` que son controladas por el optimizador D-RTO. El optimizador ajusta iterativamente los valores de estas variables para maximizar la recompensa predicha. Corresponden a las variables originalmente identificadas como 'list_no_predict' en el entrenamiento del predictor.
+        *   Status_Spray_Drying
+        *   Tower_PMC_Controller_Enabled
+        *   Producto_A
+        *   Producto_B
+        *   Producto_C
+        *   Bombeo_HP_TT_0355
+        *   Bombeo_Slurry_Densidad
+        *   Bombeo_Slurry_Humedad_HT_P401
+        *   Torre_Horno_Temp_Aire
+        *   Torre_Horno_Temp_Gas
+        *(Total: 10 variables)*
+
+    -   **Entradas Fijas (`list_fixed_inputs`)**:
+        Subconjunto de `list_cols` que se consideran como entradas dadas o disturbios durante un ciclo de optimización del D-RTO. El optimizador no ajusta estas variables. Incluyen las variables de estado y acción no definidas como variables de decisión.
+        *(Total: 24 variables, el resto de list_cols)*
+
+-   **Variables de Salida del Modelo (`list_PREDICT`)**:
+    Son las variables del proceso cuyo valor en el siguiente paso de tiempo es predicho por el modelo dinámico. La función de recompensa `cal_reward.py` utiliza un subconjunto de estas variables predichas para calcular la recompensa del estado futuro.
+    *(Total: 24 variables, el resto de variables en list_cols después de excluir list_no_predict)*
 
 ## Descripción de las variables
 
+Para la implementación del D-RTO, las variables del proceso se clasifican y utilizan de la siguiente manera en relación con el modelo dinámico y el optimizador:
+
 ### Variables de perturbación
+
+*(En la implementación actual del D-RTO (`optimizing_net.py`), estas variables corresponden a las **Variables de Decisión** (`list_decision_vars`) que son optimizadas.)*
 
 Las diez variables marcadas como "Perturbación" en la hoja Definitivos_35 del excel "DESCRIPCIÓN DE DATOS Rev 2.xlsx" son variables que en los modelos se utilizarán como si fuesen estados del Entorno, sin embargo, en la vida real, obedecen a condiciones de entrada externas al proceso, causadas por procesos anteriores a la torre de secado o condiciones de la planta. Estas son:
 
@@ -30,6 +63,8 @@ Las diez variables marcadas como "Perturbación" en la hoja Definitivos_35 del e
 
 
 ### Variables de estado del proceso
+
+*(En la implementación actual del D-RTO (`optimizing_net.py`), estas variables corresponden a una parte de las **Entradas Fijas** (`list_fixed_inputs`) para el optimizador y a las variables de **Salida Predicha** (`list_PREDICT`) del modelo dinámico que se utilizan para calcular la recompensa.)*
 
 Las siguientes 16 variables, marcadas en el excel como Controlada y Manipulada, son los estados reales de la planta
 
@@ -53,6 +88,8 @@ Las siguientes 16 variables, marcadas en el excel como Controlada y Manipulada, 
 
 
 ### Variables de Acción
+
+*(En la implementación actual del D-RTO (`optimizing_net.py`), estas variables corresponden a una parte de las **Entradas Fijas** (`list_fixed_inputs`) para el optimizador y a las variables de **Salida Predicha** (`list_PREDICT`) del modelo dinámico.)*
 
 Las siguientes ocho variables son las salidas que debe calcular la red "Red_optimizacion_secado" para optimizar económicamente la operación del proceso
 
@@ -100,6 +137,15 @@ Dentro de los parámetros más relevantes para el entrenamiento de este tipo de 
   - Hiperparámetros configurables
   - Guarda el modelo entrenado como `dqn_model.h5`
   - Genera gráficos de progreso del entrenamiento (`training_progress.png`)
+
+- **optimizing_net.py** - Dynamic Real-Time Optimization (D-RTO)
+  - Implements an optimization strategy to maximize predicted reward.
+  - Uses a trained neural network model to predict the next state.
+  - Leverages TensorFlow for defining decision variables, objective function, and optimization loop.
+  - Calculates a differentiable reward using TensorFlow operations (`calculate_differentiable_reward`) for gradient-based optimization.
+  - Uses the original `RewardCalculator` to evaluate the final optimized result.
+  - Key parameters: `OPTIMIZATION_STEPS`, `OPTIMIZATION_LEARNING_RATE`
+  - *Note: Updated to address a gradient-related issue for improved stability and accuracy.*
 
 - **test_model.py** - Validación del modelo entrenado
   - Carga el modelo y realiza pruebas unitarias
