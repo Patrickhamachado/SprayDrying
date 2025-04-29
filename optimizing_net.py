@@ -10,9 +10,9 @@ OPTIMIZATION_STEPS = 100 # Number of optimization steps
 OPTIMIZATION_LEARNING_RATE = 0.01 # Learning rate for the optimizer
 
 # Columnas que NO son predictores (variables de control/configuración) - Copied from predict_net.py
-list_no_predict = ['Status_Spray_Drying', 'Tower_PMC_Controller_Enabled', 'Producto_A', 'Producto_B',
-                   'Producto_C', 'Bombeo_HP_TT_0355', 'Bombeo_Slurry_Densidad', 'Bombeo_Slurry_Humedad_HT_P401',
-                   'Torre_Horno_Temp_Aire', 'Torre_Horno_Temp_Gas']
+list_no_predict = ['Number_of_Jets_Open', 'Bombeo_Low_Pump_P_401', 'P404_High_Pump_Pressure_SP',
+                   'Apertura_Valvula_Flujo_Aeroboost_FCV_0371', 'Apertura_Valvula_Presion_Aeroboost',
+                   'Tower_Input_Air_Fan_Speed_Ref', 'Tower_Input_Temperature_SP', 'Tower_Internal_Pressure_SP']
 
 # ========= CARGA DE DATOS Y DEFINICIÓN DE COLUMNAS =========
 print("Cargando datos y definiendo columnas...")

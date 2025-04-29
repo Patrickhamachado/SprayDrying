@@ -8,7 +8,7 @@ matplotlib.use('Agg')  # Configuración para entornos no interactivos
 import matplotlib.pyplot as plt
 
 # ========= CONFIGURACIÓN =========
-EPOCHS = 20
+EPOCHS = 4
 VALIDATION_SPLIT = 0.1
 TEST_SIZE = 0.1
 RANDOM_STATE = 137
@@ -31,9 +31,9 @@ print("\nDefiniendo columnas...")
 list_cols = data.columns.tolist()
 
 # Columnas que NO son predictores (variables de control/configuración)
-list_no_predict = ['Status_Spray_Drying', 'Tower_PMC_Controller_Enabled', 'Producto_A', 'Producto_B',
-                   'Producto_C', 'Bombeo_HP_TT_0355', 'Bombeo_Slurry_Densidad', 'Bombeo_Slurry_Humedad_HT_P401',
-                   'Torre_Horno_Temp_Aire', 'Torre_Horno_Temp_Gas']
+list_no_predict = ['Number_of_Jets_Open', 'Bombeo_Low_Pump_P_401', 'P404_High_Pump_Pressure_SP',
+                   'Apertura_Valvula_Flujo_Aeroboost_FCV_0371', 'Apertura_Valvula_Presion_Aeroboost',
+                   'Tower_Input_Air_Fan_Speed_Ref', 'Tower_Input_Temperature_SP', 'Tower_Internal_Pressure_SP']
 
 # Columnas a predecir
 list_PREDICT = [col for col in list_cols if col not in list_no_predict]
