@@ -8,7 +8,7 @@ matplotlib.use('Agg')  # Configuración para entornos no interactivos
 import matplotlib.pyplot as plt
 
 # ========= CONFIGURACIÓN =========
-EPOCHS = 4
+EPOCHS = 100
 VALIDATION_SPLIT = 0.1
 TEST_SIZE = 0.1
 RANDOM_STATE = 137
