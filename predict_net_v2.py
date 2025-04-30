@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 
 # ========= CONFIGURACIÓN =========
-EPOCHS = 4
+EPOCHS = 100
 VALIDATION_SPLIT = 0.1
 TEST_SIZE = 0.1
 RANDOM_STATE = 137
@@ -149,3 +149,24 @@ model.save('models/predict_model.keras')
 print("\nModelo guardado como spray_drying_model.keras")
 
 print("\nProceso completado exitosamente!")
+
+# Conclusiones según Aria:
+# Análisis de la Pérdida (MSE):
+#
+# La pérdida de entrenamiento (línea azul) disminuye rápidamente en las primeras épocas, estabilizándose alrededor de 2.3 después de aproximadamente 20 épocas. Esto indica que el modelo aprendió bastante bien en el conjunto de entrenamiento.
+# La pérdida de validación (línea naranja) también disminuye inicialmente, pero se estabiliza en un valor ligeramente superior (alrededor de 2.1) y permanece relativamente constante. La diferencia entre la pérdida de entrenamiento y validación es pequeña, lo que sugiere que el modelo no está sufriendo de sobreajuste severo. Sin embargo, un ligero sobreajuste podría estar presente.
+# Análisis del Error Absoluto Medio (MAE):
+#
+# El MAE de entrenamiento (línea azul) muestra una disminución pronunciada en las primeras épocas, similar a la pérdida. Se estabiliza alrededor de 0.025 después de aproximadamente 20 épocas.
+# El MAE de validación (línea naranja) presenta una tendencia similar a la de entrenamiento, aunque con mayor fluctuación. Al igual que con la pérdida, la diferencia entre el MAE de entrenamiento y validación es relativamente pequeña, indicando un sobreajuste mínimo. Sin embargo, las fluctuaciones en el MAE de validación sugieren que el modelo podría ser sensible a la variabilidad en los datos de validación.
+
+# Conclusión General:
+#
+# El entrenamiento parece haber sido exitoso, con el modelo mostrando una buena capacidad de generalización. La pequeña diferencia entre las curvas de entrenamiento y validación para ambas métricas (MSE y MAE) indica un bajo riesgo de sobreajuste. Sin embargo, las fluctuaciones en el MAE de validación merecen atención. Se podría considerar:
+#
+# Aumentar el tamaño del conjunto de datos: Esto podría ayudar a reducir la fluctuación en el MAE de validación.
+# Ajustar la tasa de aprendizaje: Una tasa de aprendizaje más pequeña podría ayudar a estabilizar el entrenamiento.
+# Utilizar técnicas de regularización: Como dropout o L1/L2 regularization, para reducir el sobreajuste.
+# Analizar los datos de validación: Para identificar posibles patrones o anomalías que podrían estar causando las fluctuaciones.
+# En general, el modelo parece ser adecuado, pero hay margen para mejorar su robustez y estabilidad. Las sugerencias anteriores podrían ayudar a lograr esto.
+
