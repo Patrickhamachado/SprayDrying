@@ -40,16 +40,16 @@ print("\nDefiniendo columnas...")
 list_cols = data.columns.tolist()
 
 # Columnas que NO son predictores (variables de control/configuración)
-list_no_predict = ['Number_of_Jets_Open', 'Bombeo_Low_Pump_P_401', 'P404_High_Pump_Pressure_SP',
+lista_acciones = ['Number_of_Jets_Open', 'Bombeo_Low_Pump_P_401', 'P404_High_Pump_Pressure_SP',
                    'Apertura_Valvula_Flujo_Aeroboost_FCV_0371', 'Apertura_Valvula_Presion_Aeroboost',
                    'Tower_Input_Air_Fan_Speed_Ref', 'Tower_Input_Temperature_SP', 'Tower_Internal_Pressure_SP']
 
 # Columnas a predecir
-list_PREDICT = [col for col in list_cols if col not in list_no_predict]
+lista_estados = [col for col in list_cols if col not in lista_acciones]
 
 print(f"\nTotal de características: {len(list_cols)}")
-print(f"Variables a predecir: {len(list_PREDICT)}")
-print("Ejemplo de variables a predecir:", list_PREDICT[:5])
+print(f"Variables a predecir: {len(lista_estados)}")
+print("Ejemplo de variables a predecir:", lista_estados[:5])
 
 # ========= DIVISIÓN DE DATOS =========
 print("\nDividiendo datos...")
@@ -58,10 +58,10 @@ test_data = data.iloc[0:-1].drop(train_data.index)
 
 # Los valores Y a predecir, son la siguiente fila de los X de entrada
 train_data_y = data.iloc[train_data.index + 1]
-train_data_y = train_data_y[list_PREDICT]
+train_data_y = train_data_y[lista_estados]
 
 test_data_y = data.iloc[test_data.index + 1]
-test_data_y = test_data_y[list_PREDICT]
+test_data_y = test_data_y[lista_estados]
 
 print(f"Tamaño del conjunto de entrenamiento: {len(train_data)}")
 print(f"Tamaño del conjunto de prueba: {len(test_data)}")
@@ -72,7 +72,7 @@ model = Sequential([Input(shape=(len(list_cols),)),
                     Dense(64, activation='relu'),
                     Dense(128, activation='relu'),
                     Dense(64, activation='relu'),
-                    Dense(len(list_PREDICT))])
+                    Dense(len(lista_estados))])
 
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE),
               loss='mse',
@@ -94,7 +94,7 @@ test_results = model.evaluate(test_data[list_cols], test_data_y, verbose=0)
 
 # Predicciones para métricas adicionales
 y_pred = model.predict(test_data[list_cols])
-y_true = test_data[list_PREDICT].values
+y_true = test_data[lista_estados].values
 
 print("\n=== MÉTRICAS PRINCIPALES ===")
 print(f"Test Loss (MSE): {test_results[0]:.4f}")

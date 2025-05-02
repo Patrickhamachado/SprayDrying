@@ -6,11 +6,11 @@ from cal_reward import RewardCalculator
 DATA_PATH = 'data/datos_Normal_v2_26abr_V1Filter.csv'
 MODEL_PATH = 'models/predict_model.keras'
 PESOS_PATH = 'data/pesos.csv' # Assuming pesos.csv is in data directory
-OPTIMIZATION_STEPS = 200 # Number of optimization steps
+OPTIMIZATION_STEPS = 100 # Number of optimization steps
 OPTIMIZATION_LEARNING_RATE = 0.01 # Learning rate for the optimizer
 
 # Columnas que NO son predictores (variables de control/configuración) - Copied from predict_net.py
-list_no_predict = ['Number_of_Jets_Open', 'Bombeo_Low_Pump_P_401', 'P404_High_Pump_Pressure_SP',
+lista_acciones = ['Number_of_Jets_Open', 'Bombeo_Low_Pump_P_401', 'P404_High_Pump_Pressure_SP',
                    'Apertura_Valvula_Flujo_Aeroboost_FCV_0371', 'Apertura_Valvula_Presion_Aeroboost',
                    'Tower_Input_Air_Fan_Speed_Ref', 'Tower_Input_Temperature_SP', 'Tower_Internal_Pressure_SP']
 
@@ -23,12 +23,12 @@ try:
         data = data.drop(columns=['time_stamp'])
 
     list_cols = data.columns.tolist()
-    list_PREDICT = [col for col in list_cols if col not in list_no_predict]
+    lista_estados = [col for col in list_cols if col not in lista_acciones]
 
     print(f"Total de características (input columns): {len(list_cols)}")
-    print(f"Variables a predecir (output columns): {len(list_PREDICT)}")
+    print(f"Variables a predecir (output columns): {len(lista_estados)}")
     print("Columnas de entrada:", list_cols[:5], "...")
-    print("Columnas de salida (predichas):", list_PREDICT[:5], "...")
+    print("Columnas de salida (predichas):", lista_estados[:5], "...")
 
 except FileNotFoundError:
     print(f"Error: El archivo de datos no se encontró en {DATA_PATH}")
@@ -39,10 +39,10 @@ except Exception as e:
 
 # ========= DEFINICIÓN DE VARIABLES PARA D-RTO =========
 print("\nDefiniendo variables de decisión y entradas fijas para D-RTO...")
-list_decision_vars = list_no_predict # Variables a optimizar
+list_decision_vars = lista_acciones # Variables a optimizar
 list_fixed_inputs = [col for col in list_cols if col not in list_decision_vars] # Resto de las entradas al modelo
 
-print(f"Variables de Decisión ({len(list_decision_vars)}): {list_decision_vars[:5]} ...")
+print(f"Variables de Decisión ({len(list_decision_vars)}): {list_decision_vars}")
 print(f"Entradas Fijas ({len(list_fixed_inputs)}): {list_fixed_inputs[:5]} ...")
 
 
@@ -66,7 +66,7 @@ try:
     print("Columnas requeridas por el calculador de recompensa:", reward_calculator.required_columns)
 
     # Verify that all required reward columns are in the predicted outputs
-    missing_reward_cols = [col for col in reward_calculator.required_columns if col not in list_PREDICT]
+    missing_reward_cols = [col for col in reward_calculator.required_columns if col not in lista_estados]
     if missing_reward_cols:
         print(f"ADVERTENCIA: Las siguientes columnas requeridas por el calculador de recompensa no están en las variables predichas: {missing_reward_cols}")
         print("La recompensa calculada solo considerará las columnas predichas disponibles.")
@@ -92,7 +92,7 @@ ordered_reward_indices = []
 base_idx_in_predicted = -1 # Index of the base variable in predicted_state_tensor (within list_PREDICT order)
 
 # Find indices of reward variables in list_PREDICT and ensure order matches weights
-predicted_col_to_idx = {col: i for i, col in enumerate(list_PREDICT)}
+predicted_col_to_idx = {col: i for i, col in enumerate(lista_estados)}
 
 for var, weight in reward_weights.items():
      if var in predicted_col_to_idx: # Check if this reward variable is one of the predicted outputs
@@ -141,7 +141,7 @@ def calculate_predicted_reward(input_data_row_tensor):
 
     # Convert the predicted state tensor to a pandas Series for the reward calculator
     # Ensure the order of columns in the Series matches list_PREDICT
-    predicted_state_series = pd.Series(predicted_state_tensor.numpy().flatten(), index=list_PREDICT)
+    predicted_state_series = pd.Series(predicted_state_tensor.numpy().flatten(), index=lista_estados)
 
     # Calculate the reward for the predicted state
     # The reward_calculator expects a DataFrame row (axis=1 in apply) or a Series
