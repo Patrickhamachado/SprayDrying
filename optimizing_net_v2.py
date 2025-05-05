@@ -1,12 +1,14 @@
 import pandas as pd
 import tensorflow as tf
+from keras.src.ops import dtype
+
 from cal_reward import RewardCalculator
 
 # ========= CONFIGURACIÓN =========
 DATA_PATH = 'data/datos_Normal_v2_26abr_V1Filter.csv'
 MODEL_PATH = 'models/predict_model.keras'
 PESOS_PATH = 'data/pesos.csv' # Assuming pesos.csv is in data directory
-OPTIMIZATION_STEPS = 300 # Number of optimization steps
+OPTIMIZATION_STEPS = 30 # Number of optimization steps
 OPTIMIZATION_LEARNING_RATE = 0.01 # Learning rate for the optimizer
 
 # Columnas que NO son predictores (variables de control/configuración) - Copied from predict_net.py
@@ -49,8 +51,8 @@ print(f"Entradas Fijas ({len(list_fixed_inputs)}): {list_fixed_inputs[:5]} ...")
 # ========= CARGA DEL MODELO =========
 print(f"\nCargando modelo desde {MODEL_PATH}...")
 try:
-    model = tf.keras.models.load_model(MODEL_PATH)
-    model.summary()
+    modelo_estado = tf.keras.models.load_model(MODEL_PATH)
+    modelo_estado.summary()
 except FileNotFoundError:
     print(f"Error: El archivo del modelo no se encontró en {MODEL_PATH}")
     print("Asegúrate de haber ejecutado predict_net.py primero para entrenar y guardar el modelo.")
@@ -102,7 +104,6 @@ for var, weight in reward_weights.items():
          if var == base_var:
              base_idx_in_predicted = predicted_col_to_idx[var]
 
-
 if not ordered_reward_vars:
      print("WARNING: None of the reward variables are in the predicted outputs (list_PREDICT). Differentiable reward will be zero.")
      # Handle case where no reward variables are predicted
@@ -137,7 +138,7 @@ def calculate_predicted_reward(input_data_row_tensor):
 
 
     # Predict the next state
-    predicted_state_tensor = model(input_data_row_tensor)
+    predicted_state_tensor = modelo_estado(input_data_row_tensor)
 
     # Convert the predicted state tensor to a pandas Series for the reward calculator
     # Ensure the order of columns in the Series matches list_PREDICT
@@ -280,11 +281,11 @@ def optimize_inputs(current_state_series, initial_decision_vars_guess):
 
             # Stack the ordered values into a single tensor (shape: 1, len(list_cols))
             input_tensor_for_model = tf.stack(ordered_input_values_tensors)
-            input_tensor_for_model = tf.expand_dims(input_tensor_for_model, axis=0) # Add batch dimension
-
+            input_tensor_for_model = tf.expand_dims(input_tensor_for_model, axis=0)  # Add batch dimension
 
             # Predict the next state using the model (inside tape)
-            predicted_state_tensor = model(input_tensor_for_model) # Shape (1, len(list_PREDICT))
+            predicted_state_tensor = modelo_estado(input_tensor_for_model) # Shape (1, len(list_PREDICT))
+            # predicted_state_tensor = tf.convert_to_tensor(model.predict(input_tensor_for_model))
 
             # Calculate the differentiable predicted reward (inside tape)
             predicted_reward_tf = calculate_differentiable_reward(predicted_state_tensor,
