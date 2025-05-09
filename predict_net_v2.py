@@ -30,6 +30,7 @@ data = pd.read_csv('data/datos_Normal_v2_26abr_V1Filter.csv')
 # Verificación de columnas
 print("\nColumnas disponibles en el dataset:")
 print(data.columns.tolist())
+print(f"\nTamaño del dataset: filas: {data.shape[0]}, columnas: {data.shape[1]}")
 
 # Eliminar columna temporal si existe
 if 'time_stamp' in data.columns:

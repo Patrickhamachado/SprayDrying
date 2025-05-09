@@ -173,7 +173,11 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 *.csv
-# *.xlsx
+*.xlsx
 *.h5
 *.keras
 *.pdf
+*.zip
+
+# Carpetas:
+checkpoints/
