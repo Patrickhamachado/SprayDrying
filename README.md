@@ -1,10 +1,60 @@
-# Proyecto de Optimización Dinámica en Tiempo Real (D-RTO) de Proceso Industrial
+# Proyecto de Optimización de un proceso industrial de secado por aspersión, Sprea Drying
 
-Implementación de un enfoque de Optimización Dinámica en Tiempo Real (D-RTO) para la operación de un proceso industrial, utilizando un modelo predictor basado en redes neuronales y una función de recompensa para maximizar el rendimiento económico.
+Implementación de un enfoque de Optimización de una función de recompensa para maximizar el rendimiento económico de la planta industrial, mediante DDPG, AWR y AWR+.
+
+## Archivos principales
+
+Los archivos más relevantes del repositorio son:
+
+### Modelo de ensamble para simular el entorno
+
+- **[modelo_torre_v0.py](modelo_torre_v0.py):** modelo de ensamble para simular el proceso de secado
+
+- **[modelo_torre_v0_test.py](modelo_torre_v0_test.py):** pruebas de desempeño del modelo de ensamble
+
+
+### Redes Crítico y Actor
+
+- **[warmup_actor_DDPG_v0.py](warmup_actor_DDPG_v0.py):** entrenamiento de la red Actor
+
+- **[warmup_critic_DDPG_v0.py](warmup_critic_DDPG_v0.py):** entrenamiento de la red Crítico
+
+
+### Modelo DDPG
+
+- **[torre_DDPG_v0.py](torre_DDPG_v0.py):** entrenamiento del modelo DDPG
+
+- **[torre_DDPG_v0_test.py](torre_DDPG_v0_test.py):** pruebas de desempeño del modelo DDPG
+
+- **[torre_DDPG_v1.py](torre_DDPG_v1.py):** entrenamiento del modelo DDPG con Gamma
+
+- **[torre_DDPG_v1_test.py](torre_DDPG_v1_test.py):** pruebas de desempeño del modelo DDPG con Gamma
+
+
+
+### Modelo AWR
+
+- **[AWR_v0.py](AWR_v0.py):** entrenamiento del modelo DDPG
+
+- **[AWR_v0_test.py](AWR_v0_test.py):** pruebas de desempeño del modelo AWR
+
+- **[AWR_Grid_v0.py](AWR_Grid_v0.py):** entrenamiento de varios modelos DDPG, para sintonizar hiperparámetros
+
+- **[AWR_Grid_test.py](AWR_Grid_test.py):** pruebas de desempeño de varios modelos AWR o AWR+
+
+- **[AWR_Grid_v1_ReLu.py](AWR_Grid_v1_ReLu.py):** entrenamiento de varios modelos AWR con tratamiento ReLU, para sintonizar hiperparámetros
+
+
+### Modelo AWR+
+
+- **[AWR_buffer_Grid_v0.py](AWR_buffer_Grid_v0.py):** entrenamiento de varios modelos AWR+, para sintonizar hiperparámetros
+
+- **[AWR_buffer_Grid_v1_ReLu.py](AWR_buffer_Grid_v1_ReLu.py):** entrenamiento de varios modelos AWR+ con tratamiento ReLU, para sintonizar hiperparámetros
+
 
 ## Estructura del Proyecto
 
-El proyecto se estructura en torno a los siguientes scripts principales que colaboran para la implementación de D-RTO:
+El proyecto se estructura en torno a los siguientes scripts principales que colaboran para la implementación RL:
 
 -   **`predict_net.py`**: Script para entrenar un modelo de red neuronal que actúa como **modelo dinámico** del proceso. Este modelo (`models/predict_model.keras`) predice el siguiente estado del sistema dadas las entradas actuales y es utilizado por el optimizador D-RTO.
 -   **`cal_reward.py`**: Clase `RewardCalculator` que define y calcula la **recompensa** instantánea del proceso basado en un estado dado, utilizando pesos especificados en `data/pesos.csv`. Esta recompensa sirve como el objetivo de optimización para el D-RTO.
