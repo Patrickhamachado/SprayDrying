@@ -5,18 +5,26 @@ import matplotlib.pyplot as plt
 import os
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import layers
+import random
 
 # Configuración
 DATASET_PATH = 'data/datos_Normal_a_e_s_7may.csv'
 MODEL_PATH = 'models/warmup_critic.keras'
 PLOT_PATH_LOSS = 'img/warmup_critic_loss.png'
 PLOT_PATH_MAE = 'img/warmup_critic_mae.png'
-EPOCHS = 50
+EPOCHS = 70
 LEARNING_RATE = 1e-4
 BATCH_SIZE = 256
+SEED = 5292
 
 os.makedirs('models', exist_ok=True)
 os.makedirs('img', exist_ok=True)
+
+# Inicializar semilla para reproducibilidad
+np.random.seed(SEED)
+random.seed(SEED)
+tf.random.set_seed(SEED)
+
 
 # Función de recompensa (la misma usada en entrenamiento DDPG)
 def compute_reward(state, action):

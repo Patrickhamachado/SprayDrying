@@ -4,19 +4,27 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import os
 from sklearn.model_selection import train_test_split
+import random
 
 # Configuración
 DATASET_PATH = 'data/datos_Normal_a_e_s_7may.csv'
 MODEL_PATH = 'models/warmup_actor.keras'
 PLOT_PATH_LOSS = 'img/warmup_actor_loss.png'
 PLOT_PATH_MAE = 'img/warmup_actor_mae.png'
-EPOCHS = 50
+EPOCHS = 100
 LEARNING_RATE = 5e-5
 BATCH_SIZE = 256
+SEED = 5292
 
 # Crear carpeta si no existe
 os.makedirs('models', exist_ok=True)
 os.makedirs('img', exist_ok=True)
+
+# Inicializar semilla para reproducibilidad
+np.random.seed(SEED)
+random.seed(SEED)
+tf.random.set_seed(SEED)
+
 
 # Cargar y preparar los datos
 df = pd.read_csv(DATASET_PATH)

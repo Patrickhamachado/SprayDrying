@@ -26,9 +26,9 @@ from IPython.display import clear_output
 # ==== CONFIGURACIÓN ====
 DATASET_PATH = 'data/datos_Normal_a_e_s_7may.csv'
 MODEL_ENV_PATH = 'models/modelo_torre.keras'        # modelo del entorno
-ACTOR_PATH = 'models/torre_DDPG_actor.keras'  #   "checkpoints/torre_DDPG_actor_1500.keras"  #    política entrenada
+ACTOR_PATH =  "checkpoints/DDPGv0/torre_DDPG_actor_1500.keras"  #  'models/DDPGv0/torre_DDPG_actor.keras'  #      política entrenada
 REPORT_PATH = 'reports/eval_torre_DDPG_v0.csv'
-IMG_DIR = 'img'
+IMG_DIR = 'img/DDPGv0'
 
 EPISODES = 100
 EPISODE_LENGTH = 60 # 120

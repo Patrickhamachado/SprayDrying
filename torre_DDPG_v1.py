@@ -55,6 +55,7 @@ ACTOR_LR = 1e-4                 # Learning rate del modelo Actor
 GAMMA = 0.99
 TAU = 0.005
 N_STEP = 5
+PENALTY_LAMBDA = 0.1            # Penalización por acciones cerca a los extremos. Puedes ajustar (0.01–0.5) según impacto
 
 CHECKPOINT_DIR = "checkpoints/DDPGv1"
 CHECKPOINT_PREFIX = os.path.join(CHECKPOINT_DIR, "ckpt")
@@ -118,11 +119,18 @@ def train_step(states, externals, actions, rewards, next_states, next_externals,
 
     # Entrenamiento del actor con menor frecuencia
     actor_loss = tf.constant(0.0)  # inicialización segura
+    penalty = tf.constant(0.0)
     if tf.equal(train_step.counter % actor_update_freq, 0):
         with tf.GradientTape() as tape:
             actions_pred = actor(states_input)
             q_val = critic([states_input, actions_pred])
+            # Pérdida principal del actor (para maximizar Q)
             actor_loss = -tf.reduce_mean(q_val)
+
+            # Penalización por saturación de acciones cercanas a 0 o 1
+            penalty = tf.reduce_mean(tf.square(actions_pred) * tf.square(1.0 - actions_pred))
+            actor_loss += PENALTY_LAMBDA * penalty  # Ajustable
+
         actor_grads = tape.gradient(actor_loss, actor.trainable_variables)
         actor_optimizer.apply_gradients(zip(actor_grads, actor.trainable_variables))
         # print("Gradientes actor:", [tf.reduce_sum(tf.abs(g)).numpy() for g in actor_grads if g is not None])
@@ -136,7 +144,7 @@ def train_step(states, externals, actions, rewards, next_states, next_externals,
     # Actualización del contador
     train_step.counter.assign_add(1)
 
-    return critic_loss, actor_loss
+    return critic_loss, actor_loss, penalty
 
 # Inicializar contador como variable de TensorFlow
 train_step.counter = tf.Variable(0)
@@ -215,6 +223,8 @@ flujo_schenck_true = []
 flujo_schenck_pred = []
 humedad_true = []
 humedad_pred = []
+action_penalty_losses = []
+episode_rewards = []
 
 
 # 1.2. Funciones varias =================================================================
@@ -561,12 +571,13 @@ for episode in range(NUM_EPISODES):
 
 
             # Se entrenan las redes
-            critic_loss, actor_loss = train_step(*tensors)
+            critic_loss, actor_loss, action_penalty = train_step(*tensors)
             # critic_loss, actor_loss = train_step(*batch)
 
             # Se historizan las pérdidas
             critic_losses.append(critic_loss.numpy())
             actor_losses.append(actor_loss.numpy())
+            action_penalty_losses.append(action_penalty.numpy())
 
         if done:
             break
@@ -623,6 +634,7 @@ for episode in range(NUM_EPISODES):
     flujo_schenck_pred.append(pred_state[12])
     humedad_true.append(true_next_state[13])
     humedad_pred.append(pred_state[13])
+    episode_rewards.append(episode_reward)
 
     # actor_losses.append(actor_loss)
     # critic_losses.append(critic_loss)
@@ -633,8 +645,10 @@ for episode in range(NUM_EPISODES):
 
         axs[0, 0].plot(actor_losses, label = 'Actor Loss', alpha = 0.3)
         axs[0, 0].plot(critic_losses, label = 'Critic Loss', alpha = 0.3)
+        axs[0, 0].plot(action_penalty_losses, label='Penalización Acciones', alpha=0.3)
         axs[0, 0].plot(moving_average(actor_losses), label = 'Actor Loss (MA)', linewidth = 2)
         axs[0, 0].plot(moving_average(critic_losses), label = 'Critic Loss (MA)', linewidth = 2)
+        axs[0, 0].plot(moving_average(action_penalty_losses), label='Penalización (MA)', linewidth=2)
         axs[0, 0].set_title("Pérdidas del Actor y Critic")
         axs[0, 0].legend()
 
@@ -657,11 +671,17 @@ for episode in range(NUM_EPISODES):
         axs[2, 0].set_title("Error del modelo de entorno (MSE)")
         axs[2, 0].legend()
 
-        mean_mse_per_var = [np.mean(m) if len(m) > 0 else 0 for m in env_model_mse_per_var]
-        axs[2, 1].bar(range(16), mean_mse_per_var)
-        axs[2, 1].set_title("MSE por variable del estado (s1 a s16)")
-        axs[2, 1].set_xlabel("Índice de variable")
-        axs[2, 1].set_ylabel("MSE promedio")
+        # mean_mse_per_var = [np.mean(m) if len(m) > 0 else 0 for m in env_model_mse_per_var]
+        # axs[2, 1].bar(range(16), mean_mse_per_var)
+        # axs[2, 1].set_title("MSE por variable del estado (s1 a s16)")
+        # axs[2, 1].set_xlabel("Índice de variable")
+        # axs[2, 1].set_ylabel("MSE promedio")
+
+        # Nueva gráfica: Recompensa acumulada por episodio
+        axs[2, 1].plot(episode_rewards, label="Reward total", alpha=0.4)
+        axs[2, 1].plot(moving_average(episode_rewards), label="Reward total (MA)", linewidth=2)
+        axs[2, 1].set_title("Recompensa acumulada por episodio")
+        axs[2, 1].legend()
 
         fig.suptitle(f"Resumen del entrenamiento - Episodio {episode + 1}")
         plt.tight_layout(rect = [0, 0.03, 1, 0.95])
@@ -670,7 +690,7 @@ for episode in range(NUM_EPISODES):
 
     # checkpoint
     if (episode + 1) % CHECKPOINT_INTERVAL == 0:
-        save_checkpoint(actor, critic, target_actor, target_critic, train_step.counter, path= CHECKPOINT_DIR, epoca = f"_{episode}")
+        save_checkpoint(actor, critic, target_actor, target_critic, train_step.counter, path= CHECKPOINT_DIR, epoca = f"_{episode + 1}")
 
     # Relación de datos reales vs sintéticos
     real_count, synthetic_count = buffer.get_balance()

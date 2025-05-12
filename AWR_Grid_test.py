@@ -16,8 +16,8 @@ ENSEMBLE_PATHS = [
     'models/modelo_torre_f4.keras',
     'models/modelo_torre_f5.keras'
 ]
-MODELS_DIR = 'models/AWR_Plus/Grid_20epocas'          # AWR plus
-# MODELS_DIR = 'models/AWR/Grid'          # AWR
+# MODELS_DIR = 'models/AWR_Plus/Grid_5_ReLu'          # AWR plus
+MODELS_DIR = 'models/AWR/Grid_Normal_E20_c5'          # AWR
 EPISODES = 100      # 100
 EPISODE_LENGTH = 120 # 120
 SUMMARY_PATH = os.path.join(MODELS_DIR, 'resumen_evaluacion.csv')

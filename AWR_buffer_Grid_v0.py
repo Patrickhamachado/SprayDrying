@@ -11,7 +11,7 @@ WARMUP_ACTOR_PATH = "models/warmup_actor.keras"
 WARMUP_CRITIC_PATH = "models/warmup_critic.keras"
 OUTPUT_DIR = "models/AWR_Plus/Grid_10epocas"
 
-NUM_EPOCHS = 2 # 100
+NUM_EPOCHS = 10 # 100
 BATCH_SIZE = 128  # 16 # 64
 SEED = 5292
 

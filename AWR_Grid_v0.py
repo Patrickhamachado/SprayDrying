@@ -9,15 +9,15 @@ import random
 CSV_PATH = "data/datos_Normal_a_e_s_7may.csv"
 WARMUP_ACTOR_PATH = "models/warmup_actor.keras"
 WARMUP_CRITIC_PATH = "models/warmup_critic.keras"
-OUTPUT_DIR = "models/AWR/Grid"
+OUTPUT_DIR = "models/AWR/Grid_Normal_E20_c5"
 
-NUM_EPOCHS = 100
+NUM_EPOCHS = 20        # 100
 BATCH_SIZE = 64
 SEED = 5292
 
 # ==== HIPERPARÁMETROS A PROBAR ====
-ADV_BETAS = [0.03, 0.05]
-ADV_CLIPS = [10.0]
+ADV_BETAS = [0.05, 0.045]        # [0.03, 0.05]
+ADV_CLIPS = [5.0]
 
 # ==== ESTABLECER SEMILLA GLOBAL ====
 def set_seed(seed=SEED):

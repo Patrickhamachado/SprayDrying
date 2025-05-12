@@ -31,14 +31,14 @@ import csv
 
 # Rutas y configuraciones
 CSV_PATH =  "data/datos_Normal_a_e_s_7may.csv"
-PLOT_PATH = "img"              # Guardar gráficas en esta ruta
+PLOT_PATH = "img/DDPGv0"              # Guardar gráficas en esta ruta
 REPORT_PATH = "reports"                   # # Guardar reportes en esta ruta
 NUM_EPISODES = 5000               # Número de episodios a entrenar 5000
 CHECKPOINT_INTERVAL = 500           # Cada cuanto guardar los modelos  500
 PLOT_INTERVAL = 500              # Cada cuántos episodios guardar gráficas 500
 BATCH_EPISODE = 8             # Número de batches por episodio 128
 BUFFER_SAMPLE = 64              # Támaño de la muestra de cada batch
-MODEL_PATH = "models"
+MODEL_PATH = "models/DDPGv0"
 MODEL_ENV_PATH = 'models/modelo_torre.keras'
 
 BUFFER_SIZE = 200000            # Tamaño del buffer circular con el que se entrenan los modelos
@@ -47,9 +47,11 @@ MAX_ENV_STEPS = 128             # Tamaño máximo de métodos env.step(accion) c
 CRITIC_LR = 1e-4                # Learning rate del modelo Crítico
 ACTOR_LR = 1e-4                 # Learning rate del modelo Actor
 
-CHECKPOINT_DIR = "checkpoints"
+CHECKPOINT_DIR = "checkpoints/DDPGv0"
 CHECKPOINT_PREFIX = os.path.join(CHECKPOINT_DIR, "ckpt")
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+
+PENALTY_LAMBDA = 0.1            # Penalización por acciones cerca a los extremos. Puedes ajustar (0.01–0.5) según impacto
 
 
 # Cargar modelo del entorno ======================
@@ -110,11 +112,18 @@ def train_step(states, externals, actions, rewards, next_states, next_externals,
 
     # Entrenamiento del actor con menor frecuencia
     actor_loss = tf.constant(0.0)  # inicialización segura
+    penalty = tf.constant(0.0)
     if tf.equal(train_step.counter % actor_update_freq, 0):
         with tf.GradientTape() as tape:
             actions_pred = actor(states_input)
             q_val = critic([states_input, actions_pred])
+            # Pérdida principal del actor (para maximizar Q)
             actor_loss = -tf.reduce_mean(q_val)
+
+            # Penalización por saturación de acciones cercanas a 0 o 1
+            penalty = tf.reduce_mean(tf.square(actions_pred) * tf.square(1.0 - actions_pred))
+            actor_loss += PENALTY_LAMBDA * penalty  # Ajustable
+
         actor_grads = tape.gradient(actor_loss, actor.trainable_variables)
         actor_optimizer.apply_gradients(zip(actor_grads, actor.trainable_variables))
 
@@ -129,7 +138,7 @@ def train_step(states, externals, actions, rewards, next_states, next_externals,
     # Actualización del contador
     train_step.counter.assign_add(1)
 
-    return critic_loss, actor_loss
+    return critic_loss, actor_loss, penalty
 
 # Inicializar contador como variable de TensorFlow
 train_step.counter = tf.Variable(0)
@@ -208,6 +217,8 @@ flujo_schenck_true = []
 flujo_schenck_pred = []
 humedad_true = []
 humedad_pred = []
+action_penalty_losses = []
+episode_rewards = []
 
 
 # 1.2. Funciones varias =================================================================
@@ -460,11 +471,12 @@ for episode in range(NUM_EPISODES):
             batch = [tf.convert_to_tensor(x, dtype=tf.float32) for x in batch]
 
             # Se entrenan las redes
-            critic_loss, actor_loss = train_step(*batch)
+            critic_loss, actor_loss, action_penalty = train_step(*batch)
 
             # Se historizan las pérdidas
             critic_losses.append(critic_loss.numpy())
             actor_losses.append(actor_loss.numpy())
+            action_penalty_losses.append(action_penalty.numpy())
 
         if done:
             break
@@ -521,6 +533,7 @@ for episode in range(NUM_EPISODES):
     flujo_schenck_pred.append(pred_state[12])
     humedad_true.append(true_next_state[13])
     humedad_pred.append(pred_state[13])
+    episode_rewards.append(episode_reward)
 
     # actor_losses.append(actor_loss)
     # critic_losses.append(critic_loss)
@@ -529,10 +542,12 @@ for episode in range(NUM_EPISODES):
     if (episode + 1) % PLOT_INTERVAL == 0:
         fig, axs = plt.subplots(3, 2, figsize=(12, 12))
 
-        axs[0, 0].plot(actor_losses, label = 'Actor Loss', alpha = 0.3)
-        axs[0, 0].plot(critic_losses, label = 'Critic Loss', alpha = 0.3)
-        axs[0, 0].plot(moving_average(actor_losses), label = 'Actor Loss (MA)', linewidth = 2)
-        axs[0, 0].plot(moving_average(critic_losses), label = 'Critic Loss (MA)', linewidth = 2)
+        axs[0, 0].plot(actor_losses, label='Actor Loss', alpha=0.3)
+        axs[0, 0].plot(critic_losses, label='Critic Loss', alpha=0.3)
+        axs[0, 0].plot(action_penalty_losses, label='Penalización Acciones', alpha=0.3)
+        axs[0, 0].plot(moving_average(actor_losses), label='Actor Loss (MA)', linewidth=2)
+        axs[0, 0].plot(moving_average(critic_losses), label='Critic Loss (MA)', linewidth=2)
+        axs[0, 0].plot(moving_average(action_penalty_losses), label='Penalización (MA)', linewidth=2)
         axs[0, 0].set_title("Pérdidas del Actor y Critic")
         axs[0, 0].legend()
 
@@ -555,11 +570,17 @@ for episode in range(NUM_EPISODES):
         axs[2, 0].set_title("Error del modelo de entorno (MSE)")
         axs[2, 0].legend()
 
-        mean_mse_per_var = [np.mean(m) if len(m) > 0 else 0 for m in env_model_mse_per_var]
-        axs[2, 1].bar(range(16), mean_mse_per_var)
-        axs[2, 1].set_title("MSE por variable del estado (s1 a s16)")
-        axs[2, 1].set_xlabel("Índice de variable")
-        axs[2, 1].set_ylabel("MSE promedio")
+        # mean_mse_per_var = [np.mean(m) if len(m) > 0 else 0 for m in env_model_mse_per_var]
+        # axs[2, 1].bar(range(16), mean_mse_per_var)
+        # axs[2, 1].set_title("MSE por variable del estado (s1 a s16)")
+        # axs[2, 1].set_xlabel("Índice de variable")
+        # axs[2, 1].set_ylabel("MSE promedio")
+
+        # Nueva gráfica: Recompensa acumulada por episodio
+        axs[2, 1].plot(episode_rewards, label="Reward total", alpha=0.4)
+        axs[2, 1].plot(moving_average(episode_rewards), label="Reward total (MA)", linewidth=2)
+        axs[2, 1].set_title("Recompensa acumulada por episodio")
+        axs[2, 1].legend()
 
         fig.suptitle(f"Resumen del entrenamiento - Episodio {episode + 1}")
         plt.tight_layout(rect = [0, 0.03, 1, 0.95])
