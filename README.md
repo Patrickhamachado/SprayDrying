@@ -1,4 +1,6 @@
-# Proyecto de Optimización de un proceso industrial de secado por aspersión, Sprea Drying
+
+
+# Proyecto de Optimización de un proceso industrial de secado por aspersión, Spray Drying
 
 Implementación de un enfoque de Optimización de una función de recompensa para maximizar el rendimiento económico de la planta industrial, mediante DDPG, AWR y AWR+.
 
