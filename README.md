@@ -36,7 +36,7 @@ Los archivos más relevantes del repositorio son:
 
 ### Modelo AWR
 
-- **[AWR_v0.py](AWR_v0.py):** entrenamiento del modelo DDPG
+- **[AWR_v0.py](AWR_v0.py):** entrenamiento del modelo AWR
 
 - **[AWR_v0_test.py](AWR_v0_test.py):** pruebas de desempeño del modelo AWR
 
