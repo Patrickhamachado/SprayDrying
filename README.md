@@ -54,14 +54,6 @@ Los archivos más relevantes del repositorio son:
 - **[AWR_buffer_Grid_v1_ReLu.py](AWR_buffer_Grid_v1_ReLu.py):** entrenamiento de varios modelos AWR+ con tratamiento ReLU, para sintonizar hiperparámetros
 
 
-## Estructura del Proyecto
-
-El proyecto se estructura en torno a los siguientes scripts principales que colaboran para la implementación RL:
-
--   **`predict_net.py`**: Script para entrenar un modelo de red neuronal que actúa como **modelo dinámico** del proceso. Este modelo (`models/predict_model.keras`) predice el siguiente estado del sistema dadas las entradas actuales y es utilizado por el optimizador D-RTO.
--   **`cal_reward.py`**: Clase `RewardCalculator` que define y calcula la **recompensa** instantánea del proceso basado en un estado dado, utilizando pesos especificados en `data/pesos.csv`. Esta recompensa sirve como el objetivo de optimización para el D-RTO.
--   **`optimizing_net.py`**: Script principal de **Optimización Dinámica en Tiempo Real (D-RTO)**. Carga el modelo dinámico y el calculador de recompensa, y utiliza optimización basada en gradientes para encontrar los valores óptimos de las variables de decisión que maximizan la recompensa predicha en el siguiente paso de tiempo, dado el estado actual del proceso.
-
 ## Variables del Proceso
 
 El modelo dinámico en `predict_net.py` utiliza un conjunto de variables de entrada (`list_cols`) para predecir un conjunto de variables de salida (`list_PREDICT`). En el contexto de la optimización D-RTO implementada en `optimizing_net.py`, estas variables tienen los siguientes roles:
@@ -215,40 +207,4 @@ Dentro de los parámetros más relevantes para el entrenamiento de este tipo de 
   - Parámetros optimizables: gamma, tasa de aprendizaje, tamaño de capas
 
 
-### Parámetros Clave del Modelo (tf_optimize.py)
-
-```python
-HYPERPARAMS = {
-    'gamma': 0.95,           # Factor de descuento
-    'epsilon_init': 1.0,     # Exploración inicial
-    'epsilon_min': 0.01,     # Exploración mínima
-    'epsilon_decay': 0.3,    # Tasa de decaimiento de exploración
-    'learning_rate': 0.001,  # Tasa de aprendizaje del optimizador
-    'batch_size': 32,        # Tamaño del batch de entrenamiento
-    'buffer_size': 2000,     # Capacidad máxima de la memoria
-    'layer_sizes': [64, 128, 64],  # Arquitectura de la red
-    'update_target_every': 100      # Pasos para actualizar red objetivo
-}
-```
-
 ---------
-
-## Algorithm 1
-Design Procedure for the proposed framework
-
-1: Control design: Select regulatory and supervisory control layers suitable for the process dynamics, interactions, and constraints.
-
-2: Setpoint identification: Identify setpoints with the greatest impact on operational costs and product quality using historical data and process expertise. These will become the focus of offline learning.
-
-3: Safety override integration: Define strict safety limits for critical process variables. Implement overrides within the control layer to supersede RL-suggested setpoints that could violate these limits.
-
-4: Offline policy learning:
-
-• Data curation: Carefully prepare a dataset according to “Training Data and Informativity" guidelines.
-
-• Value function learning: Choose a value function representation aligned with process complexity and data characteristics.
-
-• Policy extraction: Apply a method such as advantage-weighted regression (AWR) to extract a policy from the learned value function, focusing on actions with high expected long-term rewards.
-
-5: Policy deployment: Deploy the learned policy online to the system.
-
