@@ -40,7 +40,7 @@ Los archivos más relevantes del repositorio son:
 
 - **[AWR_v0_test.py](AWR_v0_test.py):** pruebas de desempeño del modelo AWR
 
-- **[AWR_Grid_v0.py](AWR_Grid_v0.py):** entrenamiento de varios modelos DDPG, para sintonizar hiperparámetros
+- **[AWR_Grid_v0.py](AWR_Grid_v0.py):** entrenamiento de varios modelos AWR, para sintonizar hiperparámetros
 
 - **[AWR_Grid_test.py](AWR_Grid_test.py):** pruebas de desempeño de varios modelos AWR o AWR+
 
